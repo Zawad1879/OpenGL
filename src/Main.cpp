@@ -8,6 +8,7 @@
 #include <iostream>
 #include "pch.h"
 
+using namespace engine;
 
 int main(int argc, const char* argv[]) {
 
@@ -105,24 +106,26 @@ int main(int argc, const char* argv[]) {
     for (uint i = 0; i < textureUnits; i++)
         samplers[i] = i;
     shader.SetUniform1iv("u_Textures", textureUnits, samplers); // length of our array is texture units and data we are sending is samplers. We are thus setting these dynamically
-    /*for (uint i = 0; i < textureUnits; i++)
-        samplers[i] = 0;*/
-    //shader.SetUniform1iv("u_TextureFrames", textureUnits, samplers);
+    for (uint i = 0; i < textureUnits; i++)
+        samplers[i] = 0;
+    shader.SetUniform1iv("u_TextureFrames", textureUnits, samplers);
     delete[] samplers;
 
     constexpr uint dataWidth = 16, dataHeight = 16, dataFrames = 2; // number of pixels in width and height
     constexpr uint dataFrameSize = dataWidth * dataHeight * 4, dataSize = dataFrameSize * dataFrames;
-
+    
     uchar data[dataSize] = { 0 }; // initialize all values with 0
     for (uint i = 0; i < dataWidth * dataHeight; i++)
     {
         data[i * 4 + 0] = 255; // set color to red
-        data[i * 4 + 3] = 255; // set transparency to opaque
+        data[i * 4 + 3] = 255; // set transparency to opaque // These two set for first frame
+        data[dataFrameSize + i * 4 + 1] = 255;
+        data[dataFrameSize + i * 4 + 3] = 255; // These two set for second frame
     }
     gfx::TextureOptions txOps;
     txOps.min = GL_NEAREST;
     txOps.mag = GL_NEAREST;
-    gfx::Texture tex(data, dataWidth, dataHeight, 1, txOps);
+    gfx::Texture tex(data, dataWidth, dataHeight, dataFrames, txOps); // 1 means 1 frame so basically a 2D obj
     //4 vertex + fragment shader
 //    uint vertex = glCreateShader(GL_VERTEX_SHADER);
 //    uint fragment = glCreateShader(GL_FRAGMENT_SHADER);
@@ -186,32 +189,32 @@ int main(int argc, const char* argv[]) {
 //    renderer.GetShader().SetUniform2f("u_Offset", 1.f, 0.f); // we only bind the shader when calling the draw method in Renderer. We're doing this ugly temporary workaround for now
 //    int index = glGetUniformLocation(renderer.m_Shader.GetId(), "u_offset");
 //    glUniform1f(index, 1.f);
-    float offset = 0.f, increment = .005f;
     double updateTime = 0;
     int frame = 0;
 
     while (gl.IsRunning()) //each loop run is a different frame
     {
         renderer.Clear();
-
-        if (math::abs(offset) >= 1.f)
-            increment *= -1;
-        offset += increment;
-        shader.SetUniform2f("u_Camera", offset, offset);
+        
+        
+//        if (math::abs(offset) >= 1.f)
+//            increment *= -1;
+//        offset += increment;
+//        shader.SetUniform2f("u_Camera", offset, offset);
         //        renderer.GetShader().SetUniform2f("u_Camera", offset, offset);
         //        glClear(GL_COLOR_BUFFER_BIT); //Clear the screen at the start of each frame. We set the color to blue in the other Core file in gfx // The frame buffer has several components and this is one of them. Later we will be using depth buffer
 
-        //        double time = glfwGetTime();
-        //        if (time - updateTime > 1)
-        //        {
-        //            samplers[0] = frame;
-        //            frame = (frame + 1) % dataFrames;
-        //            shader.SetUniform1iv("u_TextureFrames", textureUnits, samplers);
-        //            updateTime = time;
-        //        }
+                double time = glfwGetTime(); // time at which the current frame is executing
+                if (time - updateTime > 1)
+                {
+                    samplers[0] = frame;
+                    frame = (frame + 1) % dataFrames;
+                    shader.SetUniform1iv("u_TextureFrames", textureUnits, samplers);
+                    updateTime = time;
+                }
         //        glUseProgram(program);
         //        shader.Bind();
-
+        
         //        renderer.Draw(ro);
         renderer.Draw(ro, tex, shader);
         //        glBindVertexArray(va);
