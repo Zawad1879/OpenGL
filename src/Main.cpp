@@ -16,8 +16,10 @@ int main(int argc, const char* argv[]) {
     gfx::Color color;
     color.b = 1.f;
     wo.clear = color;
-    gfx::OpenGLInstance gl = gfx::init(800, 600, "Title", wo);
 
+    //    gfx::OpenGLInstance gl = gfx::init(800, 600, "Title", wo); Abstract away all the gfx code
+    engine::EngineInstance engine = engine::init(800, 600, "Game Engine Dev", wo );
+    
     //    //1 create vertex data
     //    uint va;
     //    glGenVertexArrays(1, &va);
@@ -192,7 +194,7 @@ int main(int argc, const char* argv[]) {
     double updateTime = 0;
     int frame = 0;
 
-    while (gl.IsRunning()) //each loop run is a different frame
+    while (engine.IsRunning()) //each loop run is a different frame
     {
         renderer.Clear();
         
@@ -229,10 +231,10 @@ int main(int argc, const char* argv[]) {
         //        glfwSwapBuffers(gl.window); //Draw everything and move the current buffer to the screen
         //        glfwPollEvents(); //Handle events like moving window, clicking window buttons ...
         
-        renderer.Render(gl);
+        renderer.Render(engine.gl);
     }
 
-    gfx::end(gl);
+    end(engine);
     return 0;
 
 }
