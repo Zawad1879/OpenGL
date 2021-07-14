@@ -1,0 +1,11 @@
+.DS_Store
+GDW.sln
+GDW.vcxproj
+GDW.vcxproj.filters
+GDW.vcxproj.user
+.vs/
+bin/
+bin-int/
+GDW.xcodeproj/
+Products/
+Frameworks/
