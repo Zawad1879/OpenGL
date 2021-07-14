@@ -7,6 +7,7 @@
 
 #include <iostream>
 #include "pch.h"
+#include "graphics/Sprite.h"
 
 using namespace engine;
 
@@ -101,33 +102,46 @@ int main(int argc, const char* argv[]) {
     const gfx::Renderer renderer;
     gfx::Shader shader("/Users/niamatzawad/Projects/GameDev/GDW/res/shader_texture.glsl");
 
-    int textureUnits = gfx::getMaxTextureUnits();
 
-    printf("%d\n", textureUnits);
-    int* samplers = new int[textureUnits]; 
-    for (uint i = 0; i < textureUnits; i++)
-        samplers[i] = i;
-    shader.SetUniform1iv("u_Textures", textureUnits, samplers); // length of our array is texture units and data we are sending is samplers. We are thus setting these dynamically
-    for (uint i = 0; i < textureUnits; i++)
-        samplers[i] = 0;
-    shader.SetUniform1iv("u_TextureFrames", textureUnits, samplers);
-    delete[] samplers;
-
-    constexpr uint dataWidth = 16, dataHeight = 16, dataFrames = 2; // number of pixels in width and height
-    constexpr uint dataFrameSize = dataWidth * dataHeight * 4, dataSize = dataFrameSize * dataFrames;
     
-    uchar data[dataSize] = { 0 }; // initialize all values with 0
-    for (uint i = 0; i < dataWidth * dataHeight; i++)
-    {
-        data[i * 4 + 0] = 255; // set color to red
-        data[i * 4 + 3] = 255; // set transparency to opaque // These two set for first frame
-        data[dataFrameSize + i * 4 + 1] = 255;
-        data[dataFrameSize + i * 4 + 3] = 255; // These two set for second frame
-    }
-    gfx::TextureOptions txOps;
-    txOps.min = GL_NEAREST;
-    txOps.mag = GL_NEAREST;
-    gfx::Texture tex(data, dataWidth, dataHeight, dataFrames, txOps); // 1 means 1 frame so basically a 2D obj
+    /*
+     We have abstracted this away
+     */
+//    int textureUnits = gfx::getMaxTextureUnits();
+//
+//    printf("%d\n", textureUnits);
+//    int* samplers = new int[textureUnits];
+//    for (uint i = 0; i < textureUnits; i++)
+//        samplers[i] = i;
+//    shader.SetUniform1iv("u_Textures", textureUnits, samplers); // length of our array is texture units and data we are sending is samplers. We are thus setting these dynamically
+//    for (uint i = 0; i < textureUnits; i++)
+//        samplers[i] = 0;
+//    shader.SetUniform1iv("u_TextureFrames", textureUnits, samplers);
+//    delete[] samplers;
+//
+//    constexpr uint dataWidth = 16, dataHeight = 16, dataFrames = 2; // number of pixels in width and height
+//    constexpr uint dataFrameSize = dataWidth * dataHeight * 4, dataSize = dataFrameSize * dataFrames;
+//
+//    uchar data[dataSize] = { 0 }; // initialize all values with 0
+//    for (uint i = 0; i < dataWidth * dataHeight; i++)
+//    {
+//        data[i * 4 + 0] = 255; // set color to red
+//        data[i * 4 + 3] = 255; // set transparency to opaque // These two set for first frame
+//        data[dataFrameSize + i * 4 + 1] = 255;
+//        data[dataFrameSize + i * 4 + 3] = 255; // These two set for second frame
+//    }
+//    gfx::TextureOptions txOps;
+//    txOps.min = GL_NEAREST;
+//    txOps.mag = GL_NEAREST;
+//    gfx::Texture tex(data, dataWidth, dataHeight, dataFrames, txOps); // 1 means 1 frame so basically a 2D obj
+    
+/* */
+    
+    Sprite sprite("/Users/niamatzawad/Projects/GameDev/GDW/res/test.bmp", 2, 500); // This is 41x82 px. 41 because we want to test the rounding to 4 multiple as explained in sprite.cpp. 82 because we want to divide it vertically into 2 frames
+    //500 means half a second
+    
+    
+    
     //4 vertex + fragment shader
 //    uint vertex = glCreateShader(GL_VERTEX_SHADER);
 //    uint fragment = glCreateShader(GL_FRAGMENT_SHADER);
@@ -206,19 +220,20 @@ int main(int argc, const char* argv[]) {
         //        renderer.GetShader().SetUniform2f("u_Camera", offset, offset);
         //        glClear(GL_COLOR_BUFFER_BIT); //Clear the screen at the start of each frame. We set the color to blue in the other Core file in gfx // The frame buffer has several components and this is one of them. Later we will be using depth buffer
 
-                double time = glfwGetTime(); // time at which the current frame is executing
-                if (time - updateTime > 1)
-                {
-                    samplers[0] = frame;
-                    frame = (frame + 1) % dataFrames;
-                    shader.SetUniform1iv("u_TextureFrames", textureUnits, samplers);
-                    updateTime = time;
-                }
+//                double time = glfwGetTime(); // time at which the current frame is executing
+//                if (time - updateTime > 1)
+//                {
+//                    samplers[0] = frame;
+//                    frame = (frame + 1) % dataFrames;
+//                    shader.SetUniform1iv("u_TextureFrames", textureUnits, samplers);
+//                    updateTime = time;
+//                }
         //        glUseProgram(program);
         //        shader.Bind();
         
         //        renderer.Draw(ro);
-        renderer.Draw(ro, tex, shader);
+//        renderer.Draw(ro, tex, shader);
+        renderer.Draw(ro, *sprite.GetTexture(), shader);
         //        glBindVertexArray(va);
         //        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
         //        glDrawElements(GL_TRIANGLES, math::arrlen(indices), GL_UNSIGNED_INT, nullptr); //we have already bound the buffer ibo and this method is going to use that so we set it to nullptr
