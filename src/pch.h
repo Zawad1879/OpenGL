@@ -11,3 +11,4 @@
 #include "../math/All.h"
 #include "../gfx/All.h"
 #include "./Core.h"
+#include "graphics/Sprite.h"
