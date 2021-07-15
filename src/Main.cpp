@@ -109,7 +109,7 @@ int main(int argc, const char* argv[]) {
     for (uint i = 0; i < textureUnits; i++)
         samplers[i] = 0;
     shader.SetUniform1iv("u_TextureFrames", textureUnits, samplers);
-    delete[] samplers;
+    //delete[] samplers;
 
     constexpr uint dataWidth = 16, dataHeight = 16, dataFrames = 2; // number of pixels in width and height
     constexpr uint dataFrameSize = dataWidth * dataHeight * 4, dataSize = dataFrameSize * dataFrames;
@@ -207,7 +207,7 @@ int main(int argc, const char* argv[]) {
         double time = glfwGetTime(); // time at which the current frame is executing
         if (time - updateTime > 1)
         {
-           // samplers[0] = frame;
+            samplers[0] = frame;
             frame = (frame + 1) % dataFrames;
             shader.SetUniform1iv("u_TextureFrames", textureUnits, samplers);
             updateTime = time;
