@@ -9,3 +9,4 @@ bin-int/
 GDW.xcodeproj/
 Products/
 Frameworks/
+deps/
