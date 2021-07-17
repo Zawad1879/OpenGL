@@ -253,6 +253,9 @@ int main(int argc, const char* argv[]) {
             1.f * engine.IsKeyPressed('A') - engine.IsKeyPressed('D'),
             1.f * engine.IsKeyPressed('S') - engine.IsKeyPressed('W')
         };
+        // if we are moving along both axes, scale appropriately to maintain a magnitude of `camSpeed`
+        if (!math::isZero(offset.x) && !math::isZero(offset.y))
+            offset /= math::sqrt(2.f); // no prior relationship set between pressing a/d and s/w at once. This addresses that issue
         offset *= camspeed * renderer.GetFrameDelta();
         camera += offset;
 
