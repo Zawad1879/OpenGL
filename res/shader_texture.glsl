@@ -11,7 +11,7 @@ out float v_TexIndex;
 
 void main()
 {
-    gl_Position = vec4((i_Position + u_Camera) * 1, 0, 1);
+    gl_Position = vec4((i_Position + u_Camera) * u_Scale, 0, 1);
     v_TexCoord = i_TexCoord;
     v_TexIndex = i_TexIndex;
 }
