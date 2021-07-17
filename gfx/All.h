@@ -1,5 +1,4 @@
 #pragma once
-#include "../math/All.h"
 #include "Core.h"
 #include "GLObject.h"
 #include "Buffer.h"

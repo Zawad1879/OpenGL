@@ -82,24 +82,26 @@ int main(int argc, const char* argv[]) {
     //            -.5f, .5f
     //        };
 
-    float vertices[] //this is the opengl convention for vertices
-    {
-        // bottom left
-        -.5f, -.5f, 0.f, 0.f, 0.f, // last 3 indices are texture. Textcoord for bottom left are the 3rd 4th indices, texture index is last index
-        // bottom right
-        .5f, -.5f, 1.f, 0.f, 0.f,
-        // top right
-        .5f, .5f, 1.f, 1.f, 0.f,
-        // top left
-        -.5f, .5f, 0.f, 1.f, 0.f
-    };
+    //float vertices[] //this is the opengl convention for vertices
+    //{
+    //    // bottom left
+    //    -.5f, -.5f, 0.f, 0.f, 0.f, // last 3 indices are texture. Textcoord for bottom left are the 3rd 4th indices, texture index is last index
+    //    // bottom right
+    //    .5f, -.5f, 1.f, 0.f, 0.f,
+    //    // top right
+    //    .5f, .5f, 1.f, 1.f, 0.f,
+    //    // top left
+    //    -.5f, .5f, 0.f, 1.f, 0.f
+    //};
 
     //    gfx::VertexArray va(math::arrlen(vertices), vertices, { 2, 3 });
     //    gfx::IndexBuffer ibo(va);
-    gfx::RenderObject ro(math::arrlen(vertices), vertices, { 2, 2, 1 }, engine::s_IndicesPerQuad, engine::s_VerticesPerQuad, engine::s_IndexOffsets); //first two are vertices. Next 2 are textcoord. Last is tex index
+    //gfx::RenderObject ro(math::arrlen(vertices), vertices, { 2, 2, 1 }, engine::s_IndicesPerQuad, engine::s_VerticesPerQuad, engine::s_IndexOffsets); //first two are vertices. Next 2 are textcoord. Last is tex index
 
     const gfx::Renderer renderer;
     gfx::Shader shader("res/shader_texture.glsl");
+
+    Sprite sprite("res/test.bmp", 2, 500);
 
     //int textureUnits = gfx::getMaxTextureUnits();
 
@@ -124,12 +126,49 @@ int main(int argc, const char* argv[]) {
     //    data[dataFrameSize + i * 4 + 1] = 255;
     //    data[dataFrameSize + i * 4 + 3] = 255; // These two set for second frame
     //}
+    // how many tiles we want in the x and y axes, total tile count
+    constexpr uint tileWidth = 100, tileHeight = 100, tileCount = tileWidth * tileHeight;
+    // number of floats for each tile, number of floats for whole grid
+    constexpr uint floatsPerTile = s_VerticesPerQuad * s_FloatsPerVertex, floatCount = tileCount * floatsPerTile;
+    // position/texture coord offsets
+    // read as {0.f, 0.f}, {1.f, 0.f}, {1.f, 1.f}, {0.f, 1.f}
+    // the same counter-clockwise from bottom left configuration we've been using
+    constexpr float offsets[] = { 0.f, 0.f, 1.f, 0.f, 1.f, 1.f, 0.f, 1.f };
+
+    // our actual vertex data that will be sent to the GPU
+    float* vertices = new float[floatCount];
+    for (uint i = 0; i < tileCount; i++)
+    {
+        // starting index of current tile in the vertex array
+        const uint offset = i * floatsPerTile;
+        // x and y coords within our grid of current tile 
+        const uint x = i % tileWidth, y = i / tileWidth;
+        // create 4 vertices for each tile
+        for (uint j = 0; j < s_VerticesPerQuad; j++)
+        {
+            // starting index of current vertex in the vertex array
+            const uint vertexOffset = offset + j * s_FloatsPerVertex;
+            // x, y
+            // this just uses offsets array to put each corner of the tile in the correct place
+            // base coordinates are x and y (defined above), the position within our grid of the current tile
+            vertices[vertexOffset + 0] = (x + offsets[j * 2 + 0]) * sprite.GetWidth();
+            vertices[vertexOffset + 1] = (y + offsets[j * 2 + 1]) * sprite.GetHeight();
+            // s, t
+            // offset array can be used directly for texture indices, since our Sprites always use their full texture
+            vertices[vertexOffset + 2] = offsets[j * 2 + 0];
+            vertices[vertexOffset + 3] = offsets[j * 2 + 1];
+            // hard code texture index as 0 for now (we aren't batching anything yet)
+            vertices[vertexOffset + 4] = 0.f;
+        }
+    }
+    // send data to GPU then delete it from the CPU
+    gfx::RenderObject ro(floatCount, vertices, { 2, 2, 1 }, s_IndicesPerQuad, s_VerticesPerQuad, s_IndexOffsets);
+    delete[] vertices;
     //gfx::TextureOptions txOps;
     //txOps.min = GL_NEAREST;
     //txOps.mag = GL_NEAREST;
     //gfx::Texture tex(data, dataWidth, dataHeight, dataFrames, txOps); // 1 means 1 frame so basically a 2D obj
     
-    Sprite sprite("res/test.bmp", 2, 500); // This is 41x82 px. 41 because we want to test the rounding to 4 multiple as explained in sprite.cpp. 82 because we want to divide it vertically into 2 frames
     //500 means half a second
 
     //4 vertex + fragment shader
@@ -203,6 +242,15 @@ int main(int argc, const char* argv[]) {
     {
         renderer.Clear();
 
+        // get current time in ms
+        float time = CAST(float, glfwGetTime() * 1000.f);
+        // switch our sprite's frame if necessary
+        sprite.Update(time);
+        // update frame on the gpu
+        int frame = sprite.GetCurrentFrame();
+        shader.SetUniform1iv("u_TextureFrames", 1, &frame);
+        // update scale in case our window was resized since last frame
+        shader.SetUniform2f("u_Scale", engine.gl->spwidth, engine.gl->spheight);
        /* if (math::abs(offset) >= 1.f)
             increment *= -1;
         offset += increment;
@@ -243,7 +291,7 @@ int main(int argc, const char* argv[]) {
         //        glfwSwapBuffers(gl.window); //Draw everything and move the current buffer to the screen
         //        glfwPollEvents(); //Handle events like moving window, clicking window buttons ...
         
-        renderer.Render(engine.gl);
+        renderer.Render(*engine.gl);
     }
     engine::end(engine);
     return 0;
