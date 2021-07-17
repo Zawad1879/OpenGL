@@ -240,10 +240,21 @@ int main(int argc, const char* argv[]) {
     double updateTime = 0;
     int frame = 0;
 
+    math::Vec2<float> camera = { 0.f, 0.f };
+    const float camspeed = 100.f;
     std::vector<Sprite*> sprites = { &sprite };
     while (engine.IsRunning()) //each loop run is a different frame
     {
         renderer.Clear();
+
+        // move on x-axis according to A and D and y-axis according to W and S
+        math::Vec2<float> offset =
+        {
+            1.f * engine.IsKeyPressed('A') - engine.IsKeyPressed('D'),
+            1.f * engine.IsKeyPressed('S') - engine.IsKeyPressed('W')
+        };
+        offset *= camspeed * renderer.GetFrameDelta();
+        camera += offset;
 
         //// get current time in ms
         //float time = CAST(float, glfwGetTime() * 1000.f);
@@ -279,6 +290,11 @@ int main(int argc, const char* argv[]) {
         //        }
         //        glUseProgram(program);
         //        shader.Bind();
+
+
+        // move camera
+        // update renderer's camera
+        renderer.SetCamera(camera);
 
         //        renderer.Draw(ro);
         renderer.Draw(ro, sprites);

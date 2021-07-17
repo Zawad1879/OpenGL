@@ -41,7 +41,7 @@ namespace engine
 		}
 		float GetFrameDelta() const
 		{
-			return m_FrameDelta;
+			return m_FrameDelta / 1000.f; // in seconds
 		}
 		float GetTime() const
 		{
@@ -49,6 +49,7 @@ namespace engine
 		}
 		void Render() const
 		{
+			m_Engine->gl->scroll = { 0.f, 0.f };
 			m_Renderer.Render(*m_Engine->gl);
 		}
 	private:

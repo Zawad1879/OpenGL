@@ -11,6 +11,19 @@ namespace engine
 		gfx::OpenGLInstance* gl;
 
 		bool IsRunning() const { return gl->IsRunning(); }
+		bool IsKeyPressed(uint key) const { return gl->IsKeyPressed(key); }
+		bool IsMouseLeft() const { return gl->IsMouseLeft(); }
+		bool IsMouseRight() const { return gl->IsMouseRight(); }
+		math::Vec2<float> GetCursorPos() const
+		{
+			auto temp = gl->GetCursorPos();
+			return { temp.x, temp.y };	
+		}
+		math::Vec2<float> GetScroll() const
+		{
+			auto temp = gl->scroll;
+			return { temp.x, temp.y };
+		}
 	};
 
 

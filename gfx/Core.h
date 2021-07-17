@@ -50,7 +50,7 @@ namespace gfx
 					instance->spheight = instance->psize * 2.f / height;
 				}
 			);
-			glfwSetScrollCallback(window,
+			glfwSetScrollCallback(window,  // for scroll button
 				[](GLFWwindow* window, double x, double y)
 				{
 					((OpenGLInstance*)glfwGetWindowUserPointer(window))->scroll = { (float)x, (float)y };
@@ -69,8 +69,8 @@ namespace gfx
 			return { (float)x, (float)y };
 		}
 	private:
-		bool IsKey(uint key, uint state) const { return glfwGetKey(window, key) == state; }
-		bool IsMouse(uint key, uint state) const { return glfwGetMouseButton(window, key) == state; }
+		bool IsKey(uint key, uint state) const { return glfwGetKey(window, key) == state; } // whether key is pressed. not pressed etc
+		bool IsMouse(uint key, uint state) const { return glfwGetMouseButton(window, key) == state; } // same for mouse
 	};
 
 

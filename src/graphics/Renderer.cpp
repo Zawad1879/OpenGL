@@ -48,6 +48,7 @@ namespace engine
 
 		// update our scale in case our window has resized since last frame
 		m_Shaders.SetUniform2f("u_Scale", m_Engine->gl->spwidth, m_Engine->gl->spheight);
+		
 	}
 	void Renderer::Draw(const gfx::RenderObject& obj, const std::vector<Sprite*>& sprites)
 	{	
