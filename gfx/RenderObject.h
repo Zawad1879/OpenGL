@@ -2,6 +2,7 @@
 
 namespace gfx
 {
+
     class RenderObject
     {
     public:
