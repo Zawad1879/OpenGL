@@ -8,6 +8,7 @@
 #include <iostream>
 #include "pch.h"
 #include "graphics/Sprite.h"
+#include "graphics/Renderer.h"
 
 using namespace engine;
 
@@ -98,8 +99,9 @@ int main(int argc, const char* argv[]) {
     //    gfx::IndexBuffer ibo(va);
     //gfx::RenderObject ro(math::arrlen(vertices), vertices, { 2, 2, 1 }, engine::s_IndicesPerQuad, engine::s_VerticesPerQuad, engine::s_IndexOffsets); //first two are vertices. Next 2 are textcoord. Last is tex index
 
-    const gfx::Renderer renderer;
-    gfx::Shader shader("res/shader_texture.glsl");
+    //const gfx::Renderer renderer;
+    Renderer renderer("res/shader_texture.glsl", &engine);  
+    //gfx::Shader shader("res/shader_texture.glsl");
 
     Sprite sprite("res/test.bmp", 2, 500);
 
@@ -238,19 +240,20 @@ int main(int argc, const char* argv[]) {
     double updateTime = 0;
     int frame = 0;
 
+    std::vector<Sprite*> sprites = { &sprite };
     while (engine.IsRunning()) //each loop run is a different frame
     {
         renderer.Clear();
 
-        // get current time in ms
-        float time = CAST(float, glfwGetTime() * 1000.f);
-        // switch our sprite's frame if necessary
-        sprite.Update(time);
-        // update frame on the gpu
-        int frame = sprite.GetCurrentFrame();
-        shader.SetUniform1iv("u_TextureFrames", 1, &frame);
-        // update scale in case our window was resized since last frame
-        shader.SetUniform2f("u_Scale", engine.gl->spwidth, engine.gl->spheight);
+        //// get current time in ms
+        //float time = CAST(float, glfwGetTime() * 1000.f);
+        //// switch our sprite's frame if necessary
+        //sprite.Update(time);
+        //// update frame on the gpu
+        //int frame = sprite.GetCurrentFrame();
+        //shader.SetUniform1iv("u_TextureFrames", 1, &frame);
+        //// update scale in case our window was resized since last frame
+        //shader.SetUniform2f("u_Scale", engine.gl->spwidth, engine.gl->spheight);
        /* if (math::abs(offset) >= 1.f)
             increment *= -1;
         offset += increment;
@@ -278,7 +281,7 @@ int main(int argc, const char* argv[]) {
         //        shader.Bind();
 
         //        renderer.Draw(ro);
-        renderer.Draw(ro, *sprite.GetTexture(), shader);
+        renderer.Draw(ro, sprites);
         //        glBindVertexArray(va);
         //        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
         //        glDrawElements(GL_TRIANGLES, math::arrlen(indices), GL_UNSIGNED_INT, nullptr); //we have already bound the buffer ibo and this method is going to use that so we set it to nullptr
@@ -291,7 +294,9 @@ int main(int argc, const char* argv[]) {
         //        glfwSwapBuffers(gl.window); //Draw everything and move the current buffer to the screen
         //        glfwPollEvents(); //Handle events like moving window, clicking window buttons ...
         
-        renderer.Render(*engine.gl);
+        //renderer.Render(*engine.gl);
+        renderer.Render();
+
     }
     engine::end(engine);
     return 0;
